@@ -3,20 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    plasma-manager = {
-      url = "github:nix-community/plasma-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
   };
 
-  outputs = inputs@{ self, nixpkgs, plasma-manager, ... }:
+  outputs = { self, nixpkgs }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -88,11 +77,9 @@
           themePackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
         in
         {
-          imports = [ plasma-manager.homeModules.plasma-manager ];
-
           options.programs.juxTheme = {
             enable = lib.mkEnableOption "the Jux Plasma theme";
-            rofi.enable = lib.mkEnableOption "the bundled Rofi configuration and Nerd Font";
+            rofi.enable = lib.mkEnableOption "Rofi and the matching JetBrains Mono Nerd Font";
           };
 
           config = lib.mkIf cfg.enable {
@@ -103,26 +90,12 @@
               "color-schemes/JuxTheme.colors".source = "${themePackage}/share/color-schemes/JuxTheme.colors";
               "aurorae/themes/JuxDeco".source = "${themePackage}/share/aurorae/themes/JuxDeco";
               "plasma/desktoptheme/JuxPlasma".source = "${themePackage}/share/plasma/desktoptheme/JuxPlasma";
-            } // lib.optionalAttrs cfg.rofi.enable {
               "jux-rofi-images".source = "${themePackage}/share/jux-theme/images";
             };
 
             xdg.configFile = {
               "Kvantum/NoMansSkyJux".source = "${themePackage}/share/Kvantum/NoMansSkyJux";
-            } // lib.optionalAttrs cfg.rofi.enable {
               "rofi/config.rasi".source = "${themePackage}/share/jux-theme/rofi/config.rasi";
-            };
-
-            programs.plasma = {
-              enable = true;
-              workspace = {
-                colorScheme = "JuxTheme";
-                theme = "JuxPlasma";
-                windowDecorations = {
-                  library = "org.kde.kwin.aurorae";
-                  theme = "__aurorae__svg__JuxDeco";
-                };
-              };
             };
           };
         };

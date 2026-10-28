@@ -6,7 +6,7 @@ Follow the instructions, then apply the new theme from the system settings, eith
 
 ## NixOS / Nix Flakes
 
-The flake packages the bundled Plasma, Aurorae, Kvantum, color-scheme, and Rofi assets. It exports a NixOS module for system-wide availability and a Home Manager module for per-user installation and Plasma configuration. The Home Manager module includes Plasma Manager and selects the Jux color scheme, Plasma style, and window decoration.
+The flake packages the bundled Plasma, Aurorae, Kvantum, color-scheme, and Rofi assets. It exports a NixOS module for system-wide availability and a Home Manager module that installs all assets for one user. It does not select or activate any Plasma appearance settings.
 
 Add the theme and Home Manager to your system flake, making their Nixpkgs and Home Manager inputs follow the system's inputs:
 
@@ -14,10 +14,8 @@ Add the theme and Home Manager to your system flake, making their Nixpkgs and Ho
 {
 	inputs = {
 		nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-		home-manager.url = "github:nix-community/home-manager";
 		jux-theme.url = "github:OWNER/REPOSITORY";
 		jux-theme.inputs.nixpkgs.follows = "nixpkgs";
-		jux-theme.inputs.home-manager.follows = "home-manager";
 	};
 }
 ```
@@ -31,19 +29,19 @@ Replace `OWNER/REPOSITORY` with the location of this repository. For system-wide
 }
 ```
 
-For per-user installation and declarative Plasma settings, import the Home Manager module in that user's Home Manager configuration:
+For per-user installation, import the Home Manager module in that user's Home Manager configuration:
 
 ```nix
 { inputs, ... }: {
 	imports = [ inputs.jux-theme.homeManagerModules.default ];
 	programs.juxTheme = {
 		enable = true;
-		rofi.enable = true; # Optional: install Rofi, config, images, and JetBrains Mono Nerd Font.
+		rofi.enable = true; # Optional: install Rofi and JetBrains Mono Nerd Font.
 	};
 }
 ```
 
-Set `rofi.enable = false` or omit it to leave Rofi and fonts unchanged. The NixOS module only exposes theme assets system-wide; use the Home Manager module to configure Plasma. Kvantum's files are installed, but selecting the Kvantum style remains a user setting. The external icon set, wallpaper, widgets, blur effects, and tiling scripts described below are not included in the flake.
+The Home Manager module installs the Rofi config and images whether or not `rofi.enable` is set; that option only adds the Rofi program and matching Nerd Font. The NixOS module exposes assets system-wide. Select the Plasma and Kvantum styles yourself in their settings tools. The external icon set, wallpaper, widgets, blur effects, and tiling scripts described below are not included in the flake.
 
 ### Font
 1. Install: https://www.jetbrains.com/lp/mono/
